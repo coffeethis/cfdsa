@@ -1,19 +1,19 @@
-# create the network
-docker network create nw-net
+# build docker image
+cd dov-bear/
+docker build -t dov-bear:v1 .
 
-# create the volume
-docker volume create nw-vol
+# verify docker image
+docker image ls
 
-# create the database container with the volume
+# run docker image
 docker run -d \
-    --name nwdb --network nw-net \
-    -v nw-vol:/var/lib/mysql \
-    stackupiss/nortwind-db:v1
+    -p 8080:3000 \
+    -e INSTANCE_NAME="Roy App" \
+    INSTANCE_HASH \
+    --name dov-bear dov-bear:v1
 
-# run the web app in the same network
-docker run -d -p 8080:3000 \
-    --name nwapp --network nw-net \
-    -e DB_HOST=nwdb \
-    -e DB_USER=root \
-    -e DB_PASSWORD=changeit \
-    stackupiss/northwind-app:v1
+# List all running containers
+docker ps
+
+# stop and remove docker image
+docker rm -f $(docker ps -aq)
