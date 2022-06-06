@@ -1,4 +1,4 @@
-# create a network
+# create the network
 docker network create nw-net
 
 # create the volume
