@@ -1,8 +1,14 @@
 # create the network
 docker network create nw-net
 
+# list available volumes
+docker network ls
+
 # create the volume
 docker volume create nw-vol
+
+# list available volumes
+docker volume ls
 
 # create the database container with the volume
 docker run -d \
