@@ -9,7 +9,7 @@ docker image ls
 docker run -d \
     -p 8080:3000 \
     -e INSTANCE_NAME="Roy App" \
-    INSTANCE_HASH \
+    -e INSTANCE_HASH \
     --name dov-bear dov-bear:v1
 
 # List all running containers
