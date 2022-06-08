@@ -1,0 +1,27 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bggbackendv2-hpa
+  labels:
+    name: bggbackendv2-hpa
+spec:
+  minReplicas: 1
+  maxReplicas: 4
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bggappv2-deploy
+  metrics:
+    - type: Resource
+      resource: 
+        name: cpu
+        target:
+          type: AverageValue
+          averageValue: 100m
+    - type: Resource
+      resource: 
+        name: memory
+        target:
+          type: AverageValue
+          averageValue: 128Mi
+          

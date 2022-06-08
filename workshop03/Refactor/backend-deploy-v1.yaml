@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bggappv1-svc
+  labels:
+    name: bggappv1-svc
+spec: 
+  type: ClusterIP
+  # type: LoadBalancer
+  selector:
+    name: bggappv1-po
+  ports:
+  - targetPort: 3000
+    port: 80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bggdb-cm
+  labels:
+    name: bggdb-cm
+data:
+  BGG_DB_USER: root
+  BGG_DB_HOST: bggdb-svc
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bggdb-secret
+  labels:
+    name: bggdb-secret
+type: Opaque
+data:
+  BGG_DB_PASSWORD: Y2hhbmdlaXQ=
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bggappv1-deploy
+  labels:
+    name: bggappv1-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: bggappv1-po
+  template:
+    metadata:
+      name: bggappv1-po
+      labels: 
+        name: bggappv1-po
+    spec:
+      containers:
+      - name: bggappv1-container
+        image: stackupiss/bgg-backend:v1
+        imagePullPolicy: IfNotPresent
+        args: ["--prefix", "/v1"]
+        envFrom:
+        - configMapRef:
+            name: bggdb-cm
+        - secretRef:
+            name: bggdb-secret
+        ports:
+        - name: liveness-port
+          containerPort: 3000
+        livenessProbe:
+          httpGet:
+            path: /v1/healthz
+            port: liveness-port
+            scheme: HTTP
+          failureThreshold: 1
+          periodSeconds: 10
