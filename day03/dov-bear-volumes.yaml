@@ -1,0 +1,116 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim 
+metadata:
+  name: my-vol
+  labels:
+    name: my-vol
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: do-block-storage
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-cm
+data:
+  hosts: |
+    127.0.0.1       localhost
+    127.0.1.1       batcomputer
+    # The following lines are desirable for IPv6 capable hosts
+    ::1     ip6-localhost ip6-loopback
+    fe00::0 ip6-localnet
+    ff00::0 ip6-mcastprefix
+    ff02::1 ip6-allnodes
+    ff02::2 ip6-allrouters
+  readme.txt: Please read this file
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dov-bear-cm
+  labels:
+    name: dov-bear-cm
+    dept: eng
+data:
+  INSTANCE_NAME: k8s dov-bear configmap
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dov-bear-secret
+  labels:
+    name: dov-bear-secret
+type: Opaque
+data:
+  INSTANCE_NAME: azhzIGRvdi1iZWFyIHNlY3JldA==
+
+---
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: dov-bear-deploy
+  labels:
+    name: dov-bear-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: dov-bear-po
+  template:
+    metadata:
+      name: dov-bear-po
+      labels:
+        name: dov-bear-po
+        dept: eng
+    spec:
+      volumes:
+      - name: cm-vol
+        configMap:
+          name: my-cm
+      - name: my-pvc-vol
+        persistentVolumeClaim: 
+          claimName: my-vol
+      containers:
+      - name: dov-bear-container  
+        image: chukmunnlee/dov-bear:v1
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: cm-vol 
+          mountPath: /opt/configmap
+          readOnly: true
+        - name: my-pvc-vol
+          mountPath: /opt/myvol
+        envFrom:
+        - secretRef:
+            name: dov-bear-secret
+        ports:
+        - name: dov-port 
+          containerPort: 3000
+        livenessProbe:
+          httpGet: 
+            path: /healthz
+            port: 3000
+            scheme: HTTP
+
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: dov-bear-svc
+  labels:
+    name: dov-bear-svc
+spec:
+  type: ClusterIP
+  selector:
+    name: dov-bear-po
+  ports:
+  - port: 80
+    targetPort: dov-port

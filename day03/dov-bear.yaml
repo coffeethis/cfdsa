@@ -1,0 +1,129 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dov-bear-cm
+  labels:
+    name: dov-bear-cm
+    dept: eng
+data:
+  INSTANCE_NAME: k8s dov-bear configmap
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dov-bear-secret
+  labels:
+    name: dov-bear-secret
+type: Opaque
+data:
+  INSTANCE_NAME: azhzIGRvdi1iZWFyIHNlY3JldA==
+
+---
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: dov-bear-deploy
+  labels:
+    name: dov-bear-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: dov-bear-po
+  template:
+    metadata:
+      name: dov-bear-po
+      labels:
+        name: dov-bear-po
+        dept: eng
+    spec:
+      containers:
+      - name: dov-bear-container  
+        image: chukmunnlee/dov-bear:v1
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - secretRef:
+            name: dov-bear-secret
+        ports:
+        - name: dov-port 
+          containerPort: 3000
+        livenessProbe:
+          httpGet: 
+            path: /healthz
+            port: 3000
+            scheme: HTTP
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: dov-bear-svc
+  labels:
+    name: dov-bear-svc
+spec:
+  type: ClusterIP
+  selector:
+    name: dov-bear-po
+  ports:
+  - port: 8080
+    targetPort: dov-port
+
+---
+apiVersion: networking.k8s.io/v1 
+kind: Ingress 
+metadata:
+  name: dov-bear-ing
+  labels:
+    name: dov-bear-ing
+spec:
+  ingressClassName: nginx
+  defaultBackend:
+    service:
+      name: dov-bear-svc 
+      port:
+        number: 8080
+  rules:
+  # Need to insert LB public address below
+  - host: dov-bear.137.184.251.97.nip.io 
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service: 
+            name: dov-bear-svc
+            port: 
+              number: 8080
+--- 
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler 
+metadata:
+  name: dov-bear-hpa 
+  labels:
+    name: dov-bear-hpa 
+spec:
+  minReplicas: 1
+  maxReplicas: 4
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment 
+    name: dov-bear-deploy
+  metrics:
+  - type: Resource 
+    resource:
+      name: cpu 
+      target: 
+        type: Utilization
+        averageUtilization: 30
+  - type: Resource 
+    resource:
+      name: memory 
+      target: 
+        type: Utilization
+        averageUtilization: 30
