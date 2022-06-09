@@ -82,3 +82,6 @@ kubectl top node
 
 # Pod metrics
 kubectl top pod
+
+# helm repo update
+helm repo update
