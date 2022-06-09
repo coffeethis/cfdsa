@@ -70,6 +70,7 @@ helm install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create
 # Get Storage Class
 kubectl get sc
 
+# https://artifacthub.io/packages/helm/metrics-server/metrics-server
 # add the metrics-server to helm repo
 helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
 
