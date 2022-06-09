@@ -18,7 +18,7 @@ metadata:
     name: dov-bear-secret
 type: Opaque
 data:
-  ROOT_PASSWORD: azhzIGRvdi1iZWFyIHNlY3JldA==
+  INSTANCE_NAME: azhzIGRvdi1iZWFyIHNlY3JldA==
 
 ---
 apiVersion: apps/v1
