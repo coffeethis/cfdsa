@@ -65,3 +65,19 @@ helm install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create
 
 #traffic gen
 #siege -c20 -v URL
+
+---
+# Get Storage Class
+kubectl get sc
+
+# add the metrics-server to helm repo
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+
+# Install the metric-server chart
+helm upgrade --install metrics-server metrics-server/metrics-server
+
+# Node metrics
+kubectl top node
+
+# Pod metrics
+kubectl top pod
